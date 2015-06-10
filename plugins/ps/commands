@@ -6,25 +6,27 @@ source "$(dirname $0)/functions"
 case "$1" in
   ps)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
+    APP="$2"; verify_app_name "$APP"
 
-    APP="$2"; CONTAINER_IDS=$(get_container_ids $APP)
+    CONTAINER_IDS=$(get_container_ids "$APP")
     ! (is_deployed $APP) && echo "App $APP has not been deployed" && exit 0
 
     for CID in $CONTAINER_IDS; do
+      dokku_log_info1_quiet "running processes in container: $CID"
       docker exec -ti "$CID" /bin/bash -c "ps auxwww"
     done
   ;;
 
   ps:start)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
+    APP="$2"; TAG=$(get_running_image_tag "$APP")
+    verify_app_name "$APP" "$TAG"
 
-    APP="$2"; CONTAINER_IDS=( $(get_container_ids $APP) )
+    CONTAINER_IDS=( $(get_container_ids "$APP") )
     ! (is_deployed $APP) && echo "App $APP has not been deployed" && exit 0
 
     if [[ "$(docker ps -q --no-trunc| grep -q ${CONTAINER_IDS[0]}; echo $?)" != "0" ]]; then
-      release_and_deploy $APP
+      release_and_deploy "$APP" "$TAG"
     else
       echo "App $APP already running"
     fi
@@ -32,9 +34,9 @@ case "$1" in
 
   ps:stop)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
+    APP="$2"; verify_app_name "$APP"
 
-    APP="$2"; CONTAINER_IDS=$(get_container_ids $APP)
+    CONTAINER_IDS=$(get_container_ids "$APP")
     ! (is_deployed $APP) && echo "App $APP has not been deployed" && exit 0
 
     CONTAINER_IDS_EGREP_PATTERN=$(echo $CONTAINER_IDS | xargs | sed -e "s: :|:g")
@@ -50,8 +52,7 @@ case "$1" in
 
   ps:rebuild)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
-    APP="$2"
+    APP="$2"; verify_app_name "$APP"
 
     pluginhook receive-app $APP
   ;;
@@ -68,12 +69,12 @@ case "$1" in
 
   ps:restart)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
+    APP="$2"; TAG=$(get_running_image_tag $APP)
+    verify_app_name "$APP"
 
-    APP="$2"
     ! (is_deployed $APP) && echo "App $APP has not been deployed" && exit 0
 
-    release_and_deploy $APP
+    release_and_deploy "$APP" "$TAG"
   ;;
 
   ps:restartall)
@@ -88,18 +89,19 @@ case "$1" in
 
   ps:scale)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
+    APP="$2"; TAG=$(get_running_image_tag "$APP")
+    verify_app_name "$APP" "$TAG"
 
-    APP="$2"; DOKKU_SCALE_FILE="$DOKKU_ROOT/$APP/DOKKU_SCALE"
+    DOKKU_SCALE_FILE="$DOKKU_ROOT/$APP/DOKKU_SCALE"
     shift 2
 
-    generate_scale_file "$APP"
+    generate_scale_file "$APP" "$TAG"
     if [[ -z "$@" ]];then
       dokku_log_info1 "Scaling for $APP"
       dokku_log_info2 "$(< $DOKKU_SCALE_FILE)"
     else
       set_scale "$APP" "$@"
-      release_and_deploy "$APP"
+      release_and_deploy "$APP" "$TAG"
     fi
   ;;
 

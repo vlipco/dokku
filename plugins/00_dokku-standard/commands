@@ -4,7 +4,9 @@ source "$(dirname $0)/../common/functions"
 
 case "$1" in
   build)
-    APP="$2"; IMAGE="dokku/$APP"; IMAGE_SOURCE_TYPE="$3"; TMP_WORK_DIR="$4"
+    APP="$2"; IMAGE_SOURCE_TYPE="$3"; TMP_WORK_DIR="$4"
+    verify_app_name "$APP"
+
     CACHE_DIR="$DOKKU_ROOT/$APP/cache"
 
     pushd "$TMP_WORK_DIR" &> /dev/null
@@ -53,12 +55,14 @@ case "$1" in
     ;;
 
   release)
-    APP="$2"; IMAGE="dokku/$APP"; IMAGE_SOURCE_TYPE="$3"
+    APP="$2"; IMAGE_SOURCE_TYPE="$3"; TAG="$4"
+    verify_app_name "$APP" "$TAG"
+
     case "$IMAGE_SOURCE_TYPE" in
       buildstep)
         # *DEPRECATED* in v0.4.0: `pluginhook pre-release` will be removed in future releases
-        pluginhook pre-release "$APP"
-        pluginhook pre-release-buildstep "$APP"
+        pluginhook pre-release "$APP" "$TAG"
+        pluginhook pre-release-buildstep "$APP" "$TAG"
         if [[ -f "$DOKKU_ROOT/ENV" ]]; then
           id=$(docker run -i -a stdin $IMAGE /bin/bash -c "mkdir -p /app/.profile.d && cat > /app/.profile.d/00-global-env.sh" < "$DOKKU_ROOT/ENV")
           test "$(docker wait $id)" -eq 0
@@ -70,14 +74,14 @@ case "$1" in
           docker commit $id $IMAGE > /dev/null
         fi
         # *DEPRECATED* in v0.4.0: `pluginhook post-release` will be removed in future releases
-        pluginhook post-release "$APP"
-        pluginhook post-release-buildstep "$APP"
+        pluginhook post-release "$APP" "$TAG"
+        pluginhook post-release-buildstep "$APP" "$TAG"
         ;;
 
       dockerfile)
         # buildstep pluginhooks don't necessarily make sense for dockerfiles. call the new breed!!!
-        pluginhook pre-release-dockerfile "$APP"
-        pluginhook post-release-dockerfile "$APP"
+        pluginhook pre-release-dockerfile "$APP" "$TAG"
+        pluginhook post-release-dockerfile "$APP" "$TAG"
         ;;
 
       *)
@@ -132,8 +136,7 @@ case "$1" in
 
   logs)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
-    APP="$2";
+    APP="$2"; verify_app_name "$2"
 
     if (is_deployed $APP); then
       CONTAINER_IDS=( $(get_container_ids $APP) )
@@ -159,13 +162,13 @@ case "$1" in
 
   run)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
-    APP="$2"; IMAGE="dokku/$APP"
+    APP="$2"; TAG=$(get_running_image_tag $APP)
+    verify_app_name "$APP" "$TAG"
 
     shift 2
 
-    DOCKER_ARGS=$(: | pluginhook docker-args $APP run)
-    DOCKER_ARGS+=$(: | pluginhook docker-args-run $APP)
+    DOCKER_ARGS=$(: | pluginhook docker-args $APP run $TAG)
+    DOCKER_ARGS+=$(: | pluginhook docker-args-run $APP $TAG)
     [[ $DOKKU_RM_CONTAINER ]] && DOKKU_RUN_OPTS="--rm"
     has_tty && DOKKU_RUN_OPTS+=" -i -t"
     is_image_buildstep_based "$IMAGE" && EXEC_CMD="/exec"
@@ -175,8 +178,7 @@ case "$1" in
 
   url | urls)
     [[ -z $2 ]] && echo "Please specify an app to run the command on" && exit 1
-    verify_app_name "$2"
-    APP="$2";
+    APP="$2"; verify_app_name "$2"
 
     if [[ -s "$DOKKU_ROOT/$APP/URLS" ]]; then
       case "$1" in
