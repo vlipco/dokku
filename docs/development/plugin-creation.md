@@ -80,3 +80,4 @@ A few notes:
   dokku config:set-norestart APP KEY1=VALUE1 [KEY2=VALUE2 ...]
   dokku config:unset-norestart APP KEY1 [KEY2 ...]
   ```
+- As of 0.4.0, we allow image tagging and deployment of said tagged images. Therefore, hard-coding of `$IMAGE` as `dokku/$APP` is no longer sufficient. Instead, for non `pre/post-build-*` plugins, use `get_running_image_tag()` as sourced from common/functions.
