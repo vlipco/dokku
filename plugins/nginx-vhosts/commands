@@ -119,7 +119,7 @@ EOF
 
       if is_deployed "$APP"; then
         dokku_log_info1 "Running nginx-pre-reload"
-        pluginhook nginx-pre-reload $APP $DOKKU_APP_LISTEN_PORT $DOKKU_APP_LISTEN_IP
+        plugn trigger nginx-pre-reload $APP $DOKKU_APP_LISTEN_PORT $DOKKU_APP_LISTEN_IP
 
         dokku_log_verbose "Reloading nginx"
         validate_nginx && restart_nginx
@@ -166,7 +166,7 @@ EOF
     ;;
 
   help | nginx:help)
-    cat && cat<<EOF
+    cat<<EOF
     nginx:import-ssl <app>                          Imports a tarball from stdin; should contain server.crt and server.key
     nginx:build-config <app>                        (Re)builds nginx config for given app
 EOF

@@ -53,7 +53,7 @@ case "$1" in
     verify_app_name "$2"
     APP="$2"
 
-    pluginhook receive-app $APP
+    plugn trigger receive-app $APP
   ;;
 
   ps:rebuildall)
@@ -104,7 +104,7 @@ case "$1" in
   ;;
 
   help | ps:help)
-    cat && cat<<EOF
+    cat<<EOF
     ps <app>                                        List processes running in app container(s)
     ps:scale <app> <proc>=<count> [<proc>=<count>]  Set how many processes of a given process to run
     ps:start <app>                                  Start app container(s)

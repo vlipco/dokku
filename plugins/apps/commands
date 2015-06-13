@@ -39,7 +39,7 @@ case "$1" in
 
     echo "Destroying $APP (including all add-ons)"
 
-    pluginhook pre-delete $APP
+    plugn trigger pre-delete $APP
     DOKKU_APP_CIDS=$(get_container_ids $APP)
     if [[ -n $DOKKU_APP_CIDS ]]; then
       for ID in $DOKKU_APP_CIDS;do
@@ -50,11 +50,11 @@ case "$1" in
 
     docker images | grep $IMAGE | awk '{print $3}' | xargs docker rmi &> /dev/null &
 
-    pluginhook post-delete $APP
+    plugn trigger post-delete $APP
     ;;
 
   help | apps:help)
-    cat && cat<<EOF
+    cat<<EOF
     apps                                            List your apps
     apps:create <app>                               Create a new app
     apps:destroy <app>                              Permanently destroy an app
