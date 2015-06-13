@@ -40,12 +40,12 @@ copyfiles:
 	cp dokku /usr/local/bin/dokku
 	mkdir -p ${PLUGINS_PATH}
 	find ${PLUGINS_PATH} -mindepth 2 -maxdepth 2 -name '.core' -printf '%h\0' | xargs -0 rm -Rf
-	test -d ${PLUGINS_PATH}/enabled || plugn init
+	test -d ${PLUGINS_PATH}/enabled || PLUGIN_PATH=${PLUGINS_PATH} plugn init
 	find plugins/ -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | while read plugin; do \
 		rm -Rf ${PLUGINS_PATH}/available/$$plugin && \
 		cp -R plugins/$$plugin ${PLUGINS_PATH}/available && \
 		touch ${PLUGINS_PATH}/available/$$plugin/.core; \
-		plugn enable $$plugin ;\
+		PLUGIN_PATH=${PLUGINS_PATH} plugn enable $$plugin ;\
 		done
 	$(MAKE) addman
 
