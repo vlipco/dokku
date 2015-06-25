@@ -26,7 +26,7 @@ Docker powered mini-Heroku. The smallest PaaS implementation you've ever seen.
 
 ### Development
 
-- [Plugn Creation](http://progrium.viewdocs.io/dokku/development/plugn-creation)
+- [Plugin Creation](http://progrium.viewdocs.io/dokku/development/plugin-creation)
 - [Plugn Triggers](http://progrium.viewdocs.io/dokku/development/plugn-triggers)
 - [Test Suite](http://progrium.viewdocs.io/dokku/development/testing)
 
