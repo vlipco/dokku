@@ -225,7 +225,7 @@ ${var}"
 
   help | config:help)
     cat && cat<<EOF
-    config (<app>|--global), Display all global or app-specific config vars
+    config (<app>|--global|--export), Display all global or app-specific config vars. Can also output them in source-compatible format
     config:get (<app>|--global) KEY, Display a global or app-specific config value
     config:set (<app>|--global) KEY1=VALUE1 [KEY2=VALUE2 ...], Set one or more config vars
     config:unset (<app>|--global) KEY1 [KEY2 ...], Unset one or more config vars
