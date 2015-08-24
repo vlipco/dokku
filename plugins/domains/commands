@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$(dirname $0)/../common/functions"
+source "$(dirname $0)/functions"
 
 RE_IPV4="([0-9]{1,3}[\.]){3}[0-9]{1,3}"
 
@@ -30,7 +31,7 @@ case "$1" in
 
     dokku domains:setup $APP
     dokku_log_info2_quiet "$APP Domain Names"
-    cat "$DOKKU_ROOT/$APP/VHOST"
+    get_app_domains $APP
     ;;
 
   domains:setup)
