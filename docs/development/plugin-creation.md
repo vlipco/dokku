@@ -80,3 +80,4 @@ A few notes:
   dokku config:set --no-restart APP KEY1=VALUE1 [KEY2=VALUE2 ...]
   dokku config:unset --no-restart APP KEY1 [KEY2 ...]
   ```
+- From time to time you may want to allow other plugins access to (some of) your plugin's functionality. You can expose this by including a `functions` file in your plugin for others to source. Consider all functions in that file to be publicly accessible by other plugins. Any functions not wished to be made "public" should reside within your pluginhook or commands files.
